@@ -25,7 +25,7 @@ npm run build
 Da Secrets nie committed werden, lokal `.dev.vars` erstellen:
 
 ```dotenv
-ADMIN_PASSWORD_HASH=<salt>:210000:<64-hex-zeichen>
+ADMIN_PASSWORD_HASH=<salt>:100000:<64-hex-zeichen>
 SESSION_SECRET=<mindestens-32-zufällige-Zeichen>
 ```
 
@@ -34,8 +34,8 @@ Einen Hash erzeugen (das Passwort wird nur lokal abgefragt/als Umgebungsvariable
 ```bash
 read -s -p 'Neues Adminpasswort: ' PW; echo
 SALT=$(openssl rand -hex 16)
-HASH=$(PW="$PW" SALT="$SALT" node -e "const c=require('crypto');console.log(c.pbkdf2Sync(process.env.PW,process.env.SALT,210000,32,'sha256').toString('hex'))")
-printf '%s:210000:%s\n' "$SALT" "$HASH"
+HASH=$(PW="$PW" SALT="$SALT" node -e "const c=require('crypto');console.log(c.pbkdf2Sync(process.env.PW,process.env.SALT,100000,32,'sha256').toString('hex'))")
+printf '%s:100000:%s\n' "$SALT" "$HASH"
 unset PW HASH SALT
 ```
 
