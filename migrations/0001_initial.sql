@@ -1,0 +1,10 @@
+PRAGMA foreign_keys=ON;
+CREATE TABLE object_sequence (id INTEGER PRIMARY KEY CHECK(id=1), next_number INTEGER NOT NULL); INSERT INTO object_sequence VALUES(1,1);
+CREATE TABLE artworks (id TEXT PRIMARY KEY, object_number TEXT NOT NULL UNIQUE, title TEXT NOT NULL, description TEXT, price_chf INTEGER CHECK(price_chf IS NULL OR price_chf>=0), status TEXT NOT NULL CHECK(status IN('available','reserved','sold')), visibility TEXT NOT NULL CHECK(visibility IN('draft','published')), sort_order INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, deletion_pending INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE artwork_images (id TEXT PRIMARY KEY, artwork_id TEXT NOT NULL REFERENCES artworks(id) ON DELETE CASCADE, r2_key TEXT NOT NULL UNIQUE, thumbnail_key TEXT, mime_type TEXT NOT NULL, byte_size INTEGER NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, is_primary INTEGER NOT NULL DEFAULT 0 CHECK(is_primary IN(0,1)), created_at TEXT NOT NULL);
+CREATE UNIQUE INDEX one_primary_image ON artwork_images(artwork_id) WHERE is_primary=1;
+CREATE INDEX artwork_listing ON artworks(visibility,deletion_pending,sort_order,created_at);
+CREATE TABLE site_content (id INTEGER PRIMARY KEY CHECK(id=1), artist_name TEXT NOT NULL, hero_title TEXT NOT NULL, intro_text TEXT NOT NULL, biography TEXT NOT NULL, portrait_key TEXT, contact_name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL, updated_at TEXT NOT NULL);
+INSERT INTO site_content VALUES(1,'Atelier Foscaldi','Bilder, die Erinnerungen bewahren.','Dieser Einführungstext kann im Adminbereich ersetzt werden.','Diese Biografie ist ein Ausgangspunkt. Bitte erzählen Sie hier im Adminbereich die Geschichte des Künstlers.',NULL,'Atelier Foscaldi','kontakt@example.ch','+41 00 000 00 00',datetime('now'));
+CREATE TABLE admin_sessions (id_hash TEXT PRIMARY KEY, csrf_token TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE login_attempts (client_key TEXT PRIMARY KEY, failures INTEGER NOT NULL, blocked_until TEXT, updated_at TEXT NOT NULL);
