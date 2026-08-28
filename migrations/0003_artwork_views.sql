@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS artwork_views (
+  artwork_id TEXT PRIMARY KEY REFERENCES artworks(id) ON DELETE CASCADE,
+  views INTEGER NOT NULL DEFAULT 0,
+  last_viewed_at TEXT NOT NULL
+);
