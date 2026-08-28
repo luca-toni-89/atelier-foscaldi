@@ -9,6 +9,7 @@ addEventListener('scroll',()=>$('.site-header')?.classList.toggle('scrolled',scr
 const price=a=>a.price_chf==null?'Preis auf Anfrage':`Richtpreis: CHF ${Number(a.price_chf).toLocaleString('de-CH')}.–`;
 const status={available:'Verfügbar',reserved:'Reserviert',sold:'Verkauft'};
 async function get(p){const r=await fetch(p,{headers:{accept:'application/json'}});if(!r.ok)throw Error('Inhalt konnte nicht geladen werden.');return r.json()}
+async function track(type,artworkId=''){try{await fetch('/api/public/analytics',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({type,artwork_id:artworkId}),keepalive:true})}catch{}}
 function setBrand(s){$('.brand-name').textContent=s.artist_name;document.title=`${s.artist_name} – Werkkatalog`}
 function foot(s){$('#footer').innerHTML=`<div class="footer-brand"><strong>${esc(s.artist_name)}</strong><br><span>Digitaler Werkkatalog</span></div><div class="footer-contact"><strong>${esc(s.contact_name)}</strong><br><a href="mailto:${encodeURIComponent(s.email)}">${esc(s.email)}</a><br><a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></div>`}
 function reveal(){
@@ -51,7 +52,7 @@ function startShowcase(){
 
 async function home(){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);foot(s);
-  const featured=a.slice(0,7);
+  const featured=a.slice(0,6);
   $('#main').innerHTML=`
     <div class="page-progress" aria-hidden="true"></div>
     <section class="hero">
@@ -88,12 +89,12 @@ async function home(){
         <a class="button" href="mailto:${encodeURIComponent(s.email)}">E-Mail schreiben <span aria-hidden="true">↗</span></a>
       </div>
     </section>`;
-  motion();startShowcase();
+  motion();startShowcase();track('page');
 }
 async function gallery(){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);document.title=`Alle Werke · ${s.artist_name}`;foot(s);
   $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><section class="section catalogue catalogue-page"><div class="section-heading"><div data-reveal="left"><p class="eyebrow">Werkkatalog</p><h1>Alle Werke</h1></div><p class="lead" data-reveal>${esc(value(s,'works_intro','Ein persönlicher Einblick in ein künstlerisches Lebenswerk.'))}</p></div>${a.length?`<div class="grid">${a.map((x,i)=>card(x,i)).join('')}</div>`:'<p class="empty">Der Katalog wird derzeit vorbereitet.</p>'}</section>`;
-  motion()
+  motion();track('page')
 }
 function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
@@ -113,7 +114,7 @@ async function detail(id){
       <p>Oder telefonisch: <a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></p>
     </div>
   </article>`;
-  motion();
+  motion();track('page').then(()=>track('artwork',a.id));
 }
 
 (async()=>{try{const m=location.pathname.match(/^\/werk\/([^/]+)/);m?await detail(m[1]):location.pathname.replace(/\/$/,'')==='/werke'?await gallery():await home()}catch(e){$('#main').innerHTML=`<p class="empty">${esc(e.message)}</p>`}})();
