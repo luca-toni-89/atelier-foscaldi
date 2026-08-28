@@ -36,16 +36,17 @@ function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){
 function showcase(artworks){
   const slides=shuffled(artworks.filter(x=>x.image_id)).slice(0,5);if(!slides.length)return'';
   return `<section class="showcase" aria-label="Impressionen aus dem Werkkatalog" data-reveal>
-    <div class="showcase-stage">${slides.map((x,i)=>`<a class="showcase-slide${i?'':' is-active'}" href="/werk/${encodeURIComponent(x.id)}" aria-hidden="${i?'true':'false'}"><img loading="${i?'lazy':'eager'}" decoding="async" src="/images/${encodeURIComponent(x.image_id)}" alt="${esc(x.title)}"><span><b>${esc(x.object_number)}</b>${esc(x.title)}</span></a>`).join('')}</div>
+    <div class="showcase-stage">${slides.map((x,i)=>`<a class="showcase-slide${i?'':' is-active'}" href="/werk/${encodeURIComponent(x.id)}" aria-hidden="${i?'true':'false'}"><img loading="${i?'lazy':'eager'}" decoding="async" src="/images/${encodeURIComponent(x.image_id)}" alt="${esc(x.title)}"><span><b>${esc(x.object_number)}</b>${esc(x.title)}</span></a>`).join('')}<div class="showcase-timer" aria-hidden="true"><i></i></div></div>
     <div class="showcase-footer"><p><span>Einblicke</span> in das Lebenswerk</p><div class="showcase-dots" aria-label="Bild auswählen">${slides.map((_,i)=>`<button type="button" aria-label="Bild ${i+1} anzeigen" aria-current="${i?'false':'true'}"></button>`).join('')}</div><span class="showcase-count"><b>01</b> / ${String(slides.length).padStart(2,'0')}</span></div>
   </section>`
 }
 function startShowcase(){
   const root=$('.showcase');if(!root)return;const slides=$$('.showcase-slide'),dots=$$('.showcase-dots button');if(slides.length<2)return;
-  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const show=n=>{current=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{const active=i===current;slide.classList.toggle('is-active',active);slide.setAttribute('aria-hidden',String(!active))});dots.forEach((dot,i)=>dot.setAttribute('aria-current',String(i===current)));$('.showcase-count b').textContent=String(current+1).padStart(2,'0')};
-  const play=()=>{if(!reduced){clearInterval(timer);timer=setInterval(()=>show(current+1),5200)}};
-  dots.forEach((dot,i)=>dot.onclick=()=>{show(i);play()});root.addEventListener('mouseenter',()=>clearInterval(timer));root.addEventListener('mouseleave',play);document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(timer):play());play()
+  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,interval=2800,bar=$('.showcase-timer i');
+  const restartProgress=()=>{if(reduced||!bar)return;bar.classList.remove('running');void bar.offsetWidth;bar.classList.add('running')};
+  const show=n=>{current=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{const active=i===current;slide.classList.toggle('is-active',active);slide.setAttribute('aria-hidden',String(!active))});dots.forEach((dot,i)=>dot.setAttribute('aria-current',String(i===current)));$('.showcase-count b').textContent=String(current+1).padStart(2,'0');restartProgress()};
+  const pause=()=>{clearInterval(timer);root.classList.add('is-paused')},play=()=>{if(!reduced){clearInterval(timer);root.classList.remove('is-paused');restartProgress();timer=setInterval(()=>show(current+1),interval)}};
+  dots.forEach((dot,i)=>dot.onclick=()=>{show(i);play()});root.addEventListener('mouseenter',pause);root.addEventListener('mouseleave',play);document.addEventListener('visibilitychange',()=>document.hidden?pause():play());play()
 }
 
 async function home(){
