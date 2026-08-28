@@ -108,6 +108,7 @@ h2{font-size:clamp(2.8rem,6.2vw,6.3rem);letter-spacing:-.035em;margin-bottom:.45
 .contact p:not(.eyebrow){font-size:clamp(1.1rem,1.7vw,1.35rem);color:#d9d2c6;max-width:44ch}
 .button,button{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;border:1px solid var(--ink);border-radius:0;background:var(--ink);color:white;padding:.9rem 1.35rem;min-height:50px;text-decoration:none;font:700 .76rem var(--sans);letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:background .3s,color .3s,transform .3s}
 .button:hover,button:hover{transform:translateY(-2px)}
+.sold-button{cursor:default;pointer-events:none;background:var(--muted);border-color:var(--muted);opacity:.72}
 .contact .button{margin-top:1rem;background:var(--paper);border-color:var(--paper);color:var(--ink)}
 .secondary{background:transparent;color:var(--ink)}
 .detail{max-width:1500px;margin:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.7fr);gap:clamp(3rem,8vw,9rem);align-items:start}
