@@ -1,1 +1,36 @@
-.adminbar{display:flex;justify-content:space-between;align-items:center;padding:1rem 4vw;background:#272721;color:white}.adminbar div{display:flex;gap:.7rem}.adminbar button{border-color:white}.adminmain{padding:3rem 4vw;max-width:1200px;margin:auto}.toolbar,.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0}input,textarea,select{width:100%;min-height:48px;padding:.7rem;border:1px solid #aaa;background:white;font:inherit}textarea{min-height:130px}label{display:block;margin:1rem 0;font-weight:bold}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.formgrid .wide{grid-column:1/-1}.listrow{display:grid;grid-template-columns:1fr auto;gap:1rem;padding:1.2rem 0;border-bottom:1px solid var(--line)}.notice{padding:1rem;background:#e4eddf}.error{background:#f3d9d5}.preview{display:flex;gap:1rem;overflow:auto}.preview figure{min-width:150px;margin:0}.preview img{width:150px;height:150px;object-fit:cover}.progress{height:8px;background:#ddd}.progress i{display:block;height:100%;background:#607957}.login{max-width:430px;margin:15vh auto;padding:2rem}.bulkitem{padding:1rem;border:1px solid var(--line);margin:1rem 0}@media(max-width:650px){.formgrid{grid-template-columns:1fr}.formgrid .wide{grid-column:auto}.listrow{grid-template-columns:1fr}.adminbar{align-items:flex-start;gap:1rem}.adminbar div{flex-direction:column}}
+#admin{min-height:100vh;background:#f7f4ed;font-family:var(--serif)}
+.adminbar{position:sticky;top:0;z-index:12;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem clamp(1rem,4vw,3rem);background:rgba(33,31,26,.97);color:white;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.adminbar strong{font-family:var(--sans);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
+.adminbar div{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:flex-end}
+.adminbar button{min-height:42px;padding:.65rem .85rem;border-color:rgba(255,255,255,.45);font-size:.66rem}
+.adminbar .secondary{color:white}
+.adminmain{padding:clamp(2.2rem,6vw,5rem) clamp(1rem,4vw,3rem);max-width:1240px;margin:auto}
+.adminmain h1,.login h1{font-size:clamp(3rem,8vw,6rem);margin-bottom:.5em}
+.toolbar,.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin:1.4rem 0}
+.toolbar input{flex:1 1 280px}
+input,textarea,select{width:100%;min-height:50px;padding:.8rem .9rem;border:1px solid #aaa39a;border-radius:0;background:white;color:var(--ink);font:1rem/1.45 var(--serif);transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,94,60,.13);outline:0}
+textarea{min-height:150px;resize:vertical}
+label{display:block;margin:.75rem 0;font-weight:700}
+label small{display:block;margin:.25rem 0 .6rem;color:var(--muted);font-weight:400}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem 1.4rem}
+.formgrid .wide{grid-column:1/-1}
+.form-section{grid-column:1/-1;margin:2rem 0 .6rem;padding-top:2rem;border-top:1px solid var(--line)}
+.form-section h2{font-size:clamp(1.8rem,3vw,2.8rem);margin:0 0 .3rem}
+.form-section p{color:var(--muted);margin:0;max-width:64ch}
+.listrow{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;padding:1.25rem 0;border-bottom:1px solid var(--line)}
+.listrow strong{font-size:1.2rem}
+.notice{padding:1rem 1.2rem;background:#dfeadb;border-left:3px solid #607957;margin-bottom:1.5rem}
+.error{background:#f3d9d5;border-left-color:#9c3d31;overflow-wrap:anywhere}
+.preview{display:flex;gap:1rem;overflow:auto;padding:.5rem 0 1rem}
+.preview figure{min-width:150px;margin:0}.preview img{width:150px;height:150px;object-fit:contain;background:var(--paper-deep)}
+.progress{height:8px;background:#ddd;margin:.8rem 0}.progress i{display:block;height:100%;background:#607957;transition:width .4s}
+.login{max-width:520px;margin:0 auto;padding:clamp(5rem,15vh,10rem) 1.5rem}
+.login .eyebrow{margin-bottom:1rem}
+.bulkitem{padding:1.2rem;border:1px solid var(--line);background:white;margin:1rem 0}
+@media(max-width:760px){
+  .formgrid{grid-template-columns:1fr}.formgrid .wide,.form-section{grid-column:auto}.listrow{grid-template-columns:1fr}.listrow button{width:100%}
+  .adminbar{position:static;align-items:flex-start;flex-direction:column}.adminbar div{width:100%;display:grid;grid-template-columns:1fr 1fr}.adminbar button{width:100%}
+  .toolbar{align-items:stretch}.toolbar button{width:100%}.actions{display:grid}.actions button{width:100%}
+  .adminmain h1{font-size:clamp(2.8rem,15vw,4.8rem)}
+}
