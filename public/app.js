@@ -96,7 +96,7 @@ async function gallery(){
   $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><section class="section catalogue catalogue-page"><div class="section-heading"><div data-reveal="left"><p class="eyebrow">Werkkatalog</p><h1>Alle Werke</h1></div><p class="lead" data-reveal>${esc(value(s,'works_intro','Ein persönlicher Einblick in ein künstlerisches Lebenswerk.'))}</p></div>${a.length?`<div class="grid">${a.map((x,i)=>card(x,i)).join('')}</div>`:'<p class="empty">Der Katalog wird derzeit vorbereitet.</p>'}</section>`;
   motion();track('page')
 }
-function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}${a.status!=='available'?`<span class="frame-status ${a.status}">${status[a.status]}</span>`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
+function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}${a.status!=='available'?`<span class="frame-status ${a.status}">${status[a.status]}</span>`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3><p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
 async function detail(id){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks/'+encodeURIComponent(id))]);
