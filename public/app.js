@@ -43,7 +43,7 @@ function showcase(artworks){
 }
 function startShowcase(){
   const root=$('.showcase');if(!root)return;const slides=$$('.showcase-slide'),dots=$$('.showcase-dots button');if(slides.length<2)return;
-  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,interval=2800,bar=$('.showcase-timer i');
+  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,interval=3000,bar=$('.showcase-timer i');
   const restartProgress=()=>{if(reduced||!bar)return;bar.classList.remove('running');void bar.offsetWidth;bar.classList.add('running')};
   const show=n=>{current=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{const active=i===current;slide.classList.toggle('is-active',active);slide.setAttribute('aria-hidden',String(!active))});dots.forEach((dot,i)=>dot.setAttribute('aria-current',String(i===current)));$('.showcase-count b').textContent=String(current+1).padStart(2,'0');restartProgress()};
   const pause=()=>{clearInterval(timer);root.classList.add('is-paused')},play=()=>{if(!reduced){clearInterval(timer);root.classList.remove('is-paused');restartProgress();timer=setInterval(()=>show(current+1),interval)}};
@@ -96,13 +96,14 @@ async function gallery(){
   $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><section class="section catalogue catalogue-page"><div class="section-heading"><div data-reveal="left"><p class="eyebrow">Werkkatalog</p><h1>Alle Werke</h1></div><p class="lead" data-reveal>${esc(value(s,'works_intro','Ein persönlicher Einblick in ein künstlerisches Lebenswerk.'))}</p></div>${a.length?`<div class="grid">${a.map((x,i)=>card(x,i)).join('')}</div>`:'<p class="empty">Der Katalog wird derzeit vorbereitet.</p>'}</section>`;
   motion();track('page')
 }
-function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
+function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}${a.status!=='available'?`<span class="frame-status ${a.status}">${status[a.status]}</span>`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
 async function detail(id){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks/'+encodeURIComponent(id))]);
   setBrand(s);document.title=`${a.title} · ${s.artist_name}`;foot(s);
   const subject=`Interesse an Werk ${a.object_number} – ${a.title}`,body=`Guten Tag\n\nIch interessiere mich für das Werk „${a.title}“ mit der Objektnummer ${a.object_number}.\n\nFreundliche Grüsse`;
   $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><article class="section detail">
+    <a class="back-link mobile-back" href="/#werke">← Zurück zu den Werken</a>
     <div class="detail-gallery">${a.images.map((i,n)=>`<figure class="detail-image" data-reveal style="--delay:${Math.min(n*80,240)}ms"><img loading="${n?'lazy':'eager'}" decoding="async" src="/images/${encodeURIComponent(i.id)}" alt="${esc(a.title)}${a.images.length>1?` – Ansicht ${n+1}`:''}"></figure>`).join('')}</div>
     <div class="detail-copy" data-reveal>
       <a class="back-link" href="/#werke">← Zurück zu den Werken</a>
