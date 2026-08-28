@@ -119,8 +119,10 @@ async function detail(id){
       ${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}
       ${a.description?`<p class="bio">${esc(a.description)}</p>`:''}
       <p class="price"><strong>${price(a)}</strong></p>
-      <p><a class="button" href="mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}">Interesse anfragen <span aria-hidden="true">↗</span></a></p>
-      <p>Oder telefonisch: <a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></p>
+      ${a.status==='sold'
+        ?`<p><span class="button sold-button" aria-disabled="true">Dieses Werk ist verkauft</span></p>`
+        :`<p><a class="button" href="mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}">Werk anfragen <span aria-hidden="true">↗</span></a></p>
+          <p>Oder telefonisch: <a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></p>`}
     </div>
   </article>${recent.length?`<section class="section recently-viewed"><div class="recent-heading" data-reveal><p class="eyebrow">Ihre Entdeckungen</p><h2>Kürzlich angesehen</h2></div><div class="grid">${recent.map((x,i)=>card(x,i)).join('')}</div></section>`:''}`;
   motion();track('page').then(()=>track('artwork',a.id));
