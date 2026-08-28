@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const mark=`<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22"/><path d="M15 34 24 12l9 22M19 25h10"/><path d="M33 14h-9v20"/></svg>`;
+const mark=`<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="mark-ring" cx="24" cy="24" r="22"/><path class="mark-a" d="M15 34 24 12l9 22M19 25h10"/><path class="mark-f" d="M33 14h-9v20"/></svg>`;
 const menu=$('#menu'),nav=$('#navigation');
 menu.onclick=()=>{const on=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(on));document.body.classList.toggle('menu-open',on)};
 nav.addEventListener('click',e=>{if(e.target.matches('a')){nav.classList.remove('open');menu.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')}});
@@ -51,6 +51,7 @@ function startShowcase(){
 
 async function home(){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);foot(s);
+  const featured=a.slice(0,7);
   $('#main').innerHTML=`
     <div class="page-progress" aria-hidden="true"></div>
     <section class="hero">
@@ -77,7 +78,7 @@ async function home(){
         <div data-reveal="left"><p class="eyebrow">${esc(value(s,'works_eyebrow','Werkkatalog'))}</p><h2>${esc(value(s,'works_title','Ausgewählte Werke'))}</h2></div>
         <p class="lead" data-reveal>${esc(value(s,'works_intro','Ein persönlicher Einblick in ein künstlerisches Lebenswerk.'))}</p>
       </div>
-      ${a.length?`<div class="grid">${a.map((x,i)=>card(x,i)).join('')}</div>`:'<p class="empty" data-reveal>Der Katalog wird derzeit vorbereitet.</p>'}
+      ${featured.length?`<div class="grid">${featured.map((x,i)=>card(x,i)).join('')}</div><div class="catalogue-more" data-reveal><a class="button secondary" href="/werke">Alle Werke anschauen <span aria-hidden="true">→</span></a></div>`:'<p class="empty" data-reveal>Der Katalog wird derzeit vorbereitet.</p>'}
     </section>
     <section id="kontakt" class="section contact">
       <div class="contact-inner" data-reveal>
@@ -89,13 +90,18 @@ async function home(){
     </section>`;
   motion();startShowcase();
 }
+async function gallery(){
+  const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);document.title=`Alle Werke · ${s.artist_name}`;foot(s);
+  $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><section class="section catalogue catalogue-page"><div class="section-heading"><div data-reveal="left"><p class="eyebrow">Werkkatalog</p><h1>Alle Werke</h1></div><p class="lead" data-reveal>${esc(value(s,'works_intro','Ein persönlicher Einblick in ein künstlerisches Lebenswerk.'))}</p></div>${a.length?`<div class="grid">${a.map((x,i)=>card(x,i)).join('')}</div>`:'<p class="empty">Der Katalog wird derzeit vorbereitet.</p>'}</section>`;
+  motion()
+}
 function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
 async function detail(id){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks/'+encodeURIComponent(id))]);
   setBrand(s);document.title=`${a.title} · ${s.artist_name}`;foot(s);
   const subject=`Interesse an Werk ${a.object_number} – ${a.title}`,body=`Guten Tag\n\nIch interessiere mich für das Werk „${a.title}“ mit der Objektnummer ${a.object_number}.\n\nFreundliche Grüsse`;
-  $('#main').innerHTML=`<article class="section detail">
+  $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><article class="section detail">
     <div class="detail-gallery">${a.images.map((i,n)=>`<figure class="detail-image" data-reveal style="--delay:${Math.min(n*80,240)}ms"><img loading="${n?'lazy':'eager'}" decoding="async" src="/images/${encodeURIComponent(i.id)}" alt="${esc(a.title)}${a.images.length>1?` – Ansicht ${n+1}`:''}"></figure>`).join('')}</div>
     <div class="detail-copy" data-reveal>
       <a class="back-link" href="/#werke">← Zurück zu den Werken</a>
@@ -107,7 +113,7 @@ async function detail(id){
       <p>Oder telefonisch: <a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></p>
     </div>
   </article>`;
-  reveal();
+  motion();
 }
 
-(async()=>{try{const m=location.pathname.match(/^\/werk\/([^/]+)/);m?await detail(m[1]):await home()}catch(e){$('#main').innerHTML=`<p class="empty">${esc(e.message)}</p>`}})();
+(async()=>{try{const m=location.pathname.match(/^\/werk\/([^/]+)/);m?await detail(m[1]):location.pathname.replace(/\/$/,'')==='/werke'?await gallery():await home()}catch(e){$('#main').innerHTML=`<p class="empty">${esc(e.message)}</p>`}})();
