@@ -98,9 +98,17 @@ async function gallery(){
 }
 function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}${a.status!=='available'?`<span class="frame-status ${a.status}">${status[a.status]}</span>`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3><p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
+function recentlyViewed(a){
+  let stored=[];try{stored=JSON.parse(localStorage.getItem('atelier_recently_viewed')||'[]');if(!Array.isArray(stored))stored=[]}catch{}
+  const previous=stored.filter(x=>x&&x.id!==a.id).slice(0,4),current={id:a.id,title:a.title,object_number:a.object_number,price_chf:a.price_chf,status:a.status,image_id:a.images?.[0]?.id||null};
+  try{localStorage.setItem('atelier_recently_viewed',JSON.stringify([current,...stored.filter(x=>x&&x.id!==a.id)].slice(0,6)))}catch{}
+  return previous
+}
+
 async function detail(id){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks/'+encodeURIComponent(id))]);
   setBrand(s);document.title=`${a.title} · ${s.artist_name}`;foot(s);
+  const recent=recentlyViewed(a);
   const subject=`Interesse an Werk ${a.object_number} – ${a.title}`,body=`Guten Tag\n\nIch interessiere mich für das Werk „${a.title}“ mit der Objektnummer ${a.object_number}.\n\nFreundliche Grüsse`;
   $('#main').innerHTML=`<div class="page-progress" aria-hidden="true"></div><article class="section detail">
     <a class="back-link mobile-back" href="/#werke">← Zurück zu den Werken</a>
@@ -114,7 +122,7 @@ async function detail(id){
       <p><a class="button" href="mailto:${encodeURIComponent(s.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}">Interesse anfragen <span aria-hidden="true">↗</span></a></p>
       <p>Oder telefonisch: <a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></p>
     </div>
-  </article>`;
+  </article>${recent.length?`<section class="section recently-viewed"><div class="recent-heading" data-reveal><p class="eyebrow">Ihre Entdeckungen</p><h2>Kürzlich angesehen</h2></div><div class="grid">${recent.map((x,i)=>card(x,i)).join('')}</div></section>`:''}`;
   motion();track('page').then(()=>track('artwork',a.id));
 }
 
