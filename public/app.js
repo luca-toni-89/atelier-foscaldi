@@ -43,7 +43,7 @@ function showcase(artworks){
 }
 function startShowcase(){
   const root=$('.showcase');if(!root)return;const slides=$$('.showcase-slide'),dots=$$('.showcase-dots button');if(slides.length<2)return;
-  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,interval=3000,bar=$('.showcase-timer i');
+  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,interval=5000,bar=$('.showcase-timer i');
   const restartProgress=()=>{if(reduced||!bar)return;bar.classList.remove('running');void bar.offsetWidth;bar.classList.add('running')};
   const show=n=>{current=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{const active=i===current;slide.classList.toggle('is-active',active);slide.setAttribute('aria-hidden',String(!active))});dots.forEach((dot,i)=>dot.setAttribute('aria-current',String(i===current)));$('.showcase-count b').textContent=String(current+1).padStart(2,'0');restartProgress()};
   const pause=()=>{clearInterval(timer);root.classList.add('is-paused')},play=()=>{if(!reduced){clearInterval(timer);root.classList.remove('is-paused');restartProgress();timer=setInterval(()=>show(current+1),interval)}};
