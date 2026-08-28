@@ -33,6 +33,12 @@ function motion(){
 }
 function value(s,key,fallback){return s[key]||fallback}
 function paragraphs(text){return String(text||'').split(/\n\s*\n/).filter(Boolean).map((p,i)=>`<p data-reveal style="--delay:${Math.min(i*70,280)}ms">${esc(p).replace(/\n/g,'<br>')}</p>`).join('')}
+function scrollToCurrentHash(){
+  if(!location.hash)return;
+  let id;try{id=decodeURIComponent(location.hash.slice(1))}catch{return}
+  const target=document.getElementById(id);if(!target)return;
+  requestAnimationFrame(()=>target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+}
 function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
 function showcase(artworks){
   const slides=shuffled(artworks.filter(x=>x.image_id)).slice(0,5);if(!slides.length)return'';
@@ -89,7 +95,7 @@ async function home(){
         <a class="button" href="mailto:${encodeURIComponent(s.email)}">E-Mail schreiben <span aria-hidden="true">↗</span></a>
       </div>
     </section>`;
-  motion();startShowcase();track('page');
+  motion();startShowcase();scrollToCurrentHash();track('page');
 }
 async function gallery(){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);document.title=`Alle Werke · ${s.artist_name}`;foot(s);
