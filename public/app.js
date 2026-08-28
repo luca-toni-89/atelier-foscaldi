@@ -2,8 +2,8 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mark=`<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22"/><path d="M15 34 24 12l9 22M19 25h10"/><path d="M33 14h-9v20"/></svg>`;
 const menu=$('#menu'),nav=$('#navigation');
-menu.onclick=()=>{const on=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(on))};
-nav.addEventListener('click',e=>{if(e.target.matches('a')){nav.classList.remove('open');menu.setAttribute('aria-expanded','false')}});
+menu.onclick=()=>{const on=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(on));document.body.classList.toggle('menu-open',on)};
+nav.addEventListener('click',e=>{if(e.target.matches('a')){nav.classList.remove('open');menu.setAttribute('aria-expanded','false');document.body.classList.remove('menu-open')}});
 addEventListener('scroll',()=>$('.site-header')?.classList.toggle('scrolled',scrollY>24),{passive:true});
 
 const price=a=>a.price_chf==null?'Preis auf Anfrage':`Richtpreis: CHF ${Number(a.price_chf).toLocaleString('de-CH')}.–`;
@@ -18,19 +18,40 @@ function reveal(){
   nodes.forEach(x=>io.observe(x));
 }
 function images(){
-  $$('.frame img').forEach(img=>{const done=()=>img.classList.add('loaded');img.complete?done():img.addEventListener('load',done,{once:true})});
+  $$('.frame img,.showcase img').forEach(img=>{const done=()=>img.classList.add('loaded');img.complete?done():img.addEventListener('load',done,{once:true})});
 }
 function motion(){
   reveal();images();
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches||matchMedia('(max-width: 720px)').matches)return;
-  const emblem=$('.hero-emblem');if(!emblem)return;let ticking=false;
-  addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{emblem.style.transform=`translate3d(0,${Math.min(scrollY*.08,60)}px,0)`;ticking=false});ticking=true}},{passive:true});
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const progress=$('.page-progress');let ticking=false;
+  addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{
+    if(progress){const max=document.documentElement.scrollHeight-innerHeight;progress.style.transform=`scaleX(${max>0?Math.min(scrollY/max,1):0})`}
+    const emblem=$('.hero-emblem');if(emblem&&!reduced&&innerWidth>720)emblem.style.transform=`translate3d(0,${Math.min(scrollY*.08,60)}px,0)`;
+    ticking=false
+  });ticking=true}},{passive:true});
 }
 function value(s,key,fallback){return s[key]||fallback}
+function paragraphs(text){return String(text||'').split(/\n\s*\n/).filter(Boolean).map((p,i)=>`<p data-reveal style="--delay:${Math.min(i*70,280)}ms">${esc(p).replace(/\n/g,'<br>')}</p>`).join('')}
+function shuffled(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+function showcase(artworks){
+  const slides=shuffled(artworks.filter(x=>x.image_id)).slice(0,5);if(!slides.length)return'';
+  return `<section class="showcase" aria-label="Impressionen aus dem Werkkatalog" data-reveal>
+    <div class="showcase-stage">${slides.map((x,i)=>`<a class="showcase-slide${i?'':' is-active'}" href="/werk/${encodeURIComponent(x.id)}" aria-hidden="${i?'true':'false'}"><img loading="${i?'lazy':'eager'}" decoding="async" src="/images/${encodeURIComponent(x.image_id)}" alt="${esc(x.title)}"><span><b>${esc(x.object_number)}</b>${esc(x.title)}</span></a>`).join('')}</div>
+    <div class="showcase-footer"><p><span>Einblicke</span> in das Lebenswerk</p><div class="showcase-dots" aria-label="Bild auswählen">${slides.map((_,i)=>`<button type="button" aria-label="Bild ${i+1} anzeigen" aria-current="${i?'false':'true'}"></button>`).join('')}</div><span class="showcase-count"><b>01</b> / ${String(slides.length).padStart(2,'0')}</span></div>
+  </section>`
+}
+function startShowcase(){
+  const root=$('.showcase');if(!root)return;const slides=$$('.showcase-slide'),dots=$$('.showcase-dots button');if(slides.length<2)return;
+  let current=0,timer;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const show=n=>{current=(n+slides.length)%slides.length;slides.forEach((slide,i)=>{const active=i===current;slide.classList.toggle('is-active',active);slide.setAttribute('aria-hidden',String(!active))});dots.forEach((dot,i)=>dot.setAttribute('aria-current',String(i===current)));$('.showcase-count b').textContent=String(current+1).padStart(2,'0')};
+  const play=()=>{if(!reduced){clearInterval(timer);timer=setInterval(()=>show(current+1),5200)}};
+  dots.forEach((dot,i)=>dot.onclick=()=>{show(i);play()});root.addEventListener('mouseenter',()=>clearInterval(timer));root.addEventListener('mouseleave',play);document.addEventListener('visibilitychange',()=>document.hidden?clearInterval(timer):play());play()
+}
 
 async function home(){
   const [s,a]=await Promise.all([get('/api/public/site'),get('/api/public/artworks')]);setBrand(s);foot(s);
   $('#main').innerHTML=`
+    <div class="page-progress" aria-hidden="true"></div>
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow" data-reveal>${esc(s.artist_name)}</p>
@@ -40,13 +61,14 @@ async function home(){
       <div class="hero-emblem" data-reveal="scale" style="--delay:240ms">${mark}</div>
       <div class="scroll-cue" aria-hidden="true">Entdecken</div>
     </section>
+    ${showcase(a)}
     <section id="geschichte" class="section story">
       <div class="story-inner">
         <div class="story-title" data-reveal="left">
           <p class="eyebrow">${esc(value(s,'story_eyebrow','Geschichte'))}</p>
           <h2>${esc(value(s,'story_title','Über den Künstler'))}</h2>
         </div>
-        <div class="bio" data-reveal style="--delay:100ms">${esc(s.biography)}</div>
+        <div class="bio">${paragraphs(s.biography)}</div>
       </div>
     </section>
     <section id="werke" class="section catalogue">
@@ -64,7 +86,7 @@ async function home(){
         <a class="button" href="mailto:${encodeURIComponent(s.email)}">E-Mail schreiben <span aria-hidden="true">↗</span></a>
       </div>
     </section>`;
-  motion();
+  motion();startShowcase();
 }
 function card(a,i){return `<a class="work" data-reveal href="/werk/${encodeURIComponent(a.id)}" style="--delay:${(i%3)*85}ms"><div class="frame">${a.image_id?`<img loading="lazy" decoding="async" src="/images/${encodeURIComponent(a.image_id)}" alt="${esc(a.title)}">`:''}</div><div class="work-copy"><h3>${esc(a.title)}</h3>${a.status!=='available'?`<span class="badge">${status[a.status]}</span>`:''}<p class="meta">${esc(a.object_number)} · ${price(a)}</p></div></a>`}
 
